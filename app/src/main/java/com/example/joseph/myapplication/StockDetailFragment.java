@@ -1,7 +1,10 @@
 package com.example.joseph.myapplication;
 
 import android.app.Activity;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -55,11 +58,28 @@ public class StockDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.item_detail, container, false);
+        final View rootView = inflater.inflate(R.layout.item_detail, container, false);
 
         // Show the dummy content as text in a TextView.
         if (mSymbol != null) {
             ((TextView) rootView.findViewById(R.id.item_detail)).setText(mSymbol);
+
+            StockDetailViewModel model = ViewModelProviders.of(getActivity()).get(StockDetailViewModel.class);
+            model.getStockData(mSymbol).observe(this, new Observer<StockData>() {
+                @Override
+                public void onChanged(@Nullable StockData stockData) {
+                    StockDate latestDate = stockData.mStockDates.get(0);
+
+                    // TODO handle if the date IS null!?
+                    if (latestDate != null) {
+                        ((TextView) rootView.findViewById(R.id.stock_open)).setText(Double.toString(latestDate.mOpen));
+                        ((TextView) rootView.findViewById(R.id.stock_high)).setText(Double.toString(latestDate.mHigh));
+                        ((TextView) rootView.findViewById(R.id.stock_low)).setText(Double.toString(latestDate.mLow));
+                        ((TextView) rootView.findViewById(R.id.stock_close)).setText(Double.toString(latestDate.mClose));
+                        ((TextView) rootView.findViewById(R.id.stock_volume)).setText(Integer.toString(latestDate.mVolume));
+                    }
+                }
+            });
         }
 
         return rootView;

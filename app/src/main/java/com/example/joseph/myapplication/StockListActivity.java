@@ -159,8 +159,15 @@ public class StockListActivity extends AppCompatActivity {
 
             if (item != null) {
                 holder.mIdView.setText(item.mSymbol);
-                holder.mContentView.setText(item.mLastRefreshed);
+                StockDate latestDate = item.mStockDates.get(0);
+                if (latestDate != null) {
+                    holder.mContentView.setText(Double.toString(latestDate.mClose));
+                } else {
+                    // TODO make a string asset.
+                    holder.mContentView.setText("Something went wrong!");
+                }
             } else {
+                // TODO make a string asset.
                 holder.mIdView.setText("Loading");
                 holder.mContentView.setText("Loading");
             }

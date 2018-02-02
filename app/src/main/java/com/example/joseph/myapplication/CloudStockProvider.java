@@ -106,15 +106,14 @@ public class CloudStockProvider {
     private StockData getStockDataForResponse(String jsonBody) {
         StockData result = null;
         try {
-            JSONObject stockDataObject = new JSONObject(jsonBody);
+            JSONObject stockObject = new JSONObject(jsonBody);
 
             result = new StockData();
-            JSONObject metadataObject = stockDataObject.getJSONObject(PARSER_META_DATA);
-            Log.e("Joey", metadataObject.toString());
+            JSONObject metadataObject = stockObject.getJSONObject(PARSER_META_DATA);
             result.mLastRefreshed = metadataObject.getString(JSON_PARAM_LAST_REFRESHED);
             result.mSymbol = metadataObject.getString(JSON_PARAM_SYMBOL);
 
-            JSONObject stockDateObjects = stockDataObject.getJSONObject(PARSER_STOCK_DATE);
+            JSONObject stockDateObjects = stockObject.getJSONObject(PARSER_STOCK_DATE);
             Iterator<String> iter = stockDateObjects.keys();
             while (iter.hasNext()) {
                 String dateString = iter.next();
@@ -123,14 +122,15 @@ public class CloudStockProvider {
                 date.mDate = dateString;
                 try {
                     JSONObject stockDateObject = stockDateObjects.getJSONObject(dateString);
-
                     date.mOpen = Double.parseDouble(stockDateObject.getString(JSON_PARAM_OPEN));
-                    date.mHigh = Double.parseDouble(stockDataObject.getString(JSON_PARAM_HIGH));
-                    date.mLow = Double.parseDouble(stockDataObject.getString(JSON_PARAM_LOW));
-                    date.mClose = Double.parseDouble(stockDataObject.getString(JSON_PARAM_CLOSE));
-                    date.mVolume = Integer.parseInt(stockDataObject.getString(JSON_PARAM_VOLUME));
+                    date.mHigh = Double.parseDouble(stockDateObject.getString(JSON_PARAM_HIGH));
+                    date.mLow = Double.parseDouble(stockDateObject.getString(JSON_PARAM_LOW));
+                    date.mClose = Double.parseDouble(stockDateObject.getString(JSON_PARAM_CLOSE));
+                    date.mVolume = Integer.parseInt(stockDateObject.getString(JSON_PARAM_VOLUME));
+
                 } catch (JSONException e) {
                     // Something went wrong! TODO
+                    Log.e(TAG, "Failed for parse Stock Date!");
                 }
 
                 result.mStockDates.add(date);
