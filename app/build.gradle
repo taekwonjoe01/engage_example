@@ -33,4 +33,8 @@ dependencies {
 
     // For OkHTTP
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+
+    // ViewModel and LiveData
+    implementation "android.arch.lifecycle:extensions:1.1.0"
+
 }
