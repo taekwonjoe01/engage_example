@@ -42,7 +42,7 @@ public class CloudStockProvider {
     private static final String API_KEY = "GJLF3CX2MZ6ATP09";
 
     private static final String PARSER_STOCK_DATE = "Time Series (Daily)";
-    private static final String PARSER_META_DATA = "Time Series (Daily)";
+    private static final String PARSER_META_DATA = "Meta Data";
 
     private static final String JSON_PARAM_LAST_REFRESHED = "3. Last Refreshed";
     private static final String JSON_PARAM_SYMBOL = "2. Symbol";
@@ -110,6 +110,7 @@ public class CloudStockProvider {
 
             result = new StockData();
             JSONObject metadataObject = stockDataObject.getJSONObject(PARSER_META_DATA);
+            Log.e("Joey", metadataObject.toString());
             result.mLastRefreshed = metadataObject.getString(JSON_PARAM_LAST_REFRESHED);
             result.mSymbol = metadataObject.getString(JSON_PARAM_SYMBOL);
 

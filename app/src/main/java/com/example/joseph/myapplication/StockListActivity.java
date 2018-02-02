@@ -17,8 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.joseph.myapplication.dummy.DummyContent;
-
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,6 +36,8 @@ public class StockListActivity extends AppCompatActivity {
      */
     private boolean mTwoPane;
 
+    private SimpleItemRecyclerViewAdapter mAdapter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,7 +51,8 @@ public class StockListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO refresh button
+                StockListViewModel model = ViewModelProviders.of(StockListActivity.this).get(StockListViewModel.class);
+                model.refreshUsers();
             }
         });
 
@@ -73,49 +75,73 @@ public class StockListActivity extends AppCompatActivity {
         model.getStockData().observe(this, new Observer<List<LiveData<StockData>>>() {
             @Override
             public void onChanged(@Nullable List<LiveData<StockData>> liveData) {
-                
+                mAdapter.setItems(liveData);
+
+                // Right now, this LIST does not ever update, so this next logic is safe, however
+                // if we change this behavior (defined in the ListViewModel), we should unregister and
+                // reregister Observers.
+                int index = 0;
+                for (LiveData<StockData> stockData : liveData) {
+                    final int ldIndex = index;
+                    stockData.observe(StockListActivity.this, new Observer<StockData>() {
+                        @Override
+                        public void onChanged(@Nullable StockData stockData) {
+                            mAdapter.notifyItemChanged(ldIndex);
+                        }
+                    });
+                    index++;
+                }
             }
         });
+        model.refreshUsers();
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
-        recyclerView.setAdapter(new SimpleItemRecyclerViewAdapter(this, DummyContent.ITEMS, mTwoPane));
+        mAdapter = new SimpleItemRecyclerViewAdapter(this, mTwoPane);
+        recyclerView.setAdapter(mAdapter);
     }
 
     public static class SimpleItemRecyclerViewAdapter
             extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
 
         private final StockListActivity mParentActivity;
-        private final List<DummyContent.DummyItem> mValues;
+        private List<LiveData<StockData>> mValues;
         private final boolean mTwoPane;
         private final View.OnClickListener mOnClickListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                DummyContent.DummyItem item = (DummyContent.DummyItem) view.getTag();
-                if (mTwoPane) {
-                    Bundle arguments = new Bundle();
-                    arguments.putString(StockDetailFragment.ARG_ITEM_ID, item.id);
-                    StockDetailFragment fragment = new StockDetailFragment();
-                    fragment.setArguments(arguments);
-                    mParentActivity.getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.item_detail_container, fragment)
-                            .commit();
-                } else {
-                    Context context = view.getContext();
-                    Intent intent = new Intent(context, StockDetailActivity.class);
-                    intent.putExtra(StockDetailFragment.ARG_ITEM_ID, item.id);
+                LiveData<StockData> liveDataItem = (LiveData<StockData>) view.getTag();
 
-                    context.startActivity(intent);
+                StockData item = liveDataItem.getValue();
+                if (item != null) {
+                    if (mTwoPane) {
+                        Bundle arguments = new Bundle();
+                        arguments.putString(StockDetailFragment.ARG_ITEM_ID, item.mSymbol);
+                        StockDetailFragment fragment = new StockDetailFragment();
+                        fragment.setArguments(arguments);
+                        mParentActivity.getSupportFragmentManager().beginTransaction()
+                                .replace(R.id.item_detail_container, fragment)
+                                .commit();
+                    } else {
+                        Context context = view.getContext();
+                        Intent intent = new Intent(context, StockDetailActivity.class);
+                        intent.putExtra(StockDetailFragment.ARG_ITEM_ID, item.mSymbol);
+
+                        context.startActivity(intent);
+                    }
                 }
             }
         };
 
         SimpleItemRecyclerViewAdapter(StockListActivity parent,
-                                      List<DummyContent.DummyItem> items,
                                       boolean twoPane) {
-            mValues = items;
+            mValues = new ArrayList<>();
             mParentActivity = parent;
             mTwoPane = twoPane;
+        }
+
+        public void setItems(List<LiveData<StockData>> items) {
+            mValues = items;
         }
 
         @Override
@@ -127,8 +153,17 @@ public class StockListActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
+            LiveData<StockData> liveDataItem = mValues.get(position);
+
+            StockData item = liveDataItem.getValue();
+
+            if (item != null) {
+                holder.mIdView.setText(item.mSymbol);
+                holder.mContentView.setText(item.mLastRefreshed);
+            } else {
+                holder.mIdView.setText("Loading");
+                holder.mContentView.setText("Loading");
+            }
 
             holder.itemView.setTag(mValues.get(position));
             holder.itemView.setOnClickListener(mOnClickListener);
