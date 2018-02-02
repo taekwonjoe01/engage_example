@@ -6,7 +6,8 @@ import java.util.List;
 /**
  * POJO object caching the Stock data relevant to the application.
  *
- * TODO
+ * TODO:
+ * -Store this on device? Perhaps a Room database?
  */
 public class StockData {
 

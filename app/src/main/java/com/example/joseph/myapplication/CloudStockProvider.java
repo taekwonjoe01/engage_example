@@ -25,8 +25,11 @@ import okhttp3.Response;
  * from the cloud. Ideal implementations of this object would likely include some abstraction to
  * increase modularity for differnt types of StockProviders (Local database, different cloud sources,
  * custom stock libraries, etc.)
+ *
+ * Things left TODO:
+ * -Some more robust error handling with networking. As of now, the UI does not properly signal to
+ * the user that errors occured.
  */
-
 public class CloudStockProvider {
     private static final String TAG = CloudStockProvider.class.getSimpleName();
 

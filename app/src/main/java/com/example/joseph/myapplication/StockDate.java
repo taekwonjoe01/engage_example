@@ -2,8 +2,6 @@ package com.example.joseph.myapplication;
 
 /**
  * POJO object caching the Stock data relevant to the application per date.
- *
- * TODO
  */
 public class StockDate {
     public double mOpen;

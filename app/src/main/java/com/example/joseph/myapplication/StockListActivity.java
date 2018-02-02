@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * An activity representing a list of Items. This activity
+ * An activity representing a list of Stocks. This activity
  * has different presentations for handset and tablet-size devices. On
  * handsets, the activity presents a list of items, which when touched,
  * lead to a {@link StockDetailActivity} representing
@@ -70,7 +70,6 @@ public class StockListActivity extends AppCompatActivity {
 
         // Create a ViewModel the first time the system calls an activity's onCreate() method.
         // Re-created activities receive the same MyViewModel instance created by the first activity.
-
         StockListViewModel model = ViewModelProviders.of(this).get(StockListViewModel.class);
         model.getStockData().observe(this, new Observer<List<LiveData<StockData>>>() {
             @Override
